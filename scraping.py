@@ -32,15 +32,16 @@ unique_listings = set()
 # Iterate through each div tag
 for div in soup.find_all('div'):
     price = div.find(class_="text-white text-smish font-semibold bg-teal-light py-1 px-2")
+    location = div.find(class_="text-grey-dark font-semibold text-smish")
     description = div.find(class_="text-teal-light hover:text-teal no-underline")
     time = div.find(class_="text-white text-smish bg-teal-light py-1 px-2")
     url_tag = div.find('a', class_="font-bold text-teal-light hover:text-teal no-underline")
 
-    if price and description and time and url_tag:
+    if price and location and description and time and url_tag:
         start_time, end_time = parse_dates(time.text.strip())
         url = "https://www.listingsproject.com" + url_tag.get('href', '').strip()
-        listing_tuple = (start_time, end_time, price.text.strip(), description.text.strip(), url)
-
+        listing_tuple = (start_time, end_time, price.text.strip(), location.text.strip(), description.text.strip(), url)
+        
         # Check for duplicates
         if listing_tuple not in unique_listings:
             unique_listings.add(listing_tuple)
@@ -58,10 +59,17 @@ csv_file_path = 'listings.csv'
 
 # Writing to CSV
 with open(csv_file_path, 'w', newline='', encoding='utf-8') as file:
-    writer = csv.writer(file)
-    writer.writerow(['Start Time', 'End Time', 'Price', 'Description', 'URL'])  # Writing header
+    writer = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    writer.writerow(['Start Time', 'End Time', 'Price', 'Location', 'Description', 'URL'])  # Updated header
 
     for listing in listings:
-        writer.writerow([listing[0].strftime('%Y-%m-%d'), listing[1].strftime('%Y-%m-%d'), listing[2], listing[3], listing[4]])
+        writer.writerow([
+            listing[0].strftime('%Y-%m-%d'), 
+            listing[1].strftime('%Y-%m-%d'), 
+            listing[2], 
+            listing[3].replace('|', '-'), 
+            listing[4], 
+            listing[5]
+        ])
 
 print(f"Data exported to {csv_file_path}")
