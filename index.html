@@ -11,6 +11,10 @@
             padding: 5px;
             text-align: left;
         }
+        img {
+            max-width: 300px; /* Adjust as needed */
+            height: auto;
+        }
     </style>
 </head>
 <body>
@@ -22,6 +26,7 @@
             <th>Price</th>
             <th>Location</th>
             <th>Description</th>
+            <th>Picture</th>
             <th>URL</th>
         </tr>
     </table>
@@ -36,7 +41,11 @@
                     const tr = document.createElement('tr');
                     row.forEach((cell, cellIndex) => {
                         const td = document.createElement('td');
-                        if (cellIndex === 5) { // Assuming URL is the 6th column
+                        if (cellIndex === 5) { // Assuming Picture URL is the 6th column
+                            const img = document.createElement('img');
+                            img.src = cell;
+                            td.appendChild(img);
+                        } else if (cellIndex === 6) { // Assuming URL is the 7th column
                             const a = document.createElement('a');
                             a.href = cell;
                             a.textContent = cell;
@@ -49,6 +58,9 @@
                     });
                     table.appendChild(tr);
                 });
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
             });
     </script>
 </body>

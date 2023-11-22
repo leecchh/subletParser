@@ -35,12 +35,14 @@ for div in soup.find_all('div'):
     location = div.find(class_="text-grey-dark font-semibold text-smish")
     description = div.find(class_="text-teal-light hover:text-teal no-underline")
     time = div.find(class_="text-white text-smish bg-teal-light py-1 px-2")
+    img_tag = div.find('img')
     url_tag = div.find('a', class_="font-bold text-teal-light hover:text-teal no-underline")
 
-    if price and location and description and time and url_tag:
+    if price and location and description and time and img_tag and url_tag:
         start_time, end_time = parse_dates(time.text.strip())
+        img_src = img_tag.get('src', '').strip()
         url = "https://www.listingsproject.com" + url_tag.get('href', '').strip()
-        listing_tuple = (start_time, end_time, price.text.strip(), location.text.strip(), description.text.strip(), url)
+        listing_tuple = (start_time, end_time, price.text.strip(), location.text.strip(), description.text.strip(), img_src, url)
         
         # Check for duplicates
         if listing_tuple not in unique_listings:
@@ -50,17 +52,13 @@ for div in soup.find_all('div'):
 # Sort listings by startTime
 listings.sort(key=lambda x: x[0])
 
-# Print sorted listings
-for listing in listings:
-    print(f"Start Time: {listing[0]}, End Time: {listing[1]}, Price: {listing[2]}, Description: {listing[3]}, URL: {listing[4]}")
-
 # CSV file path
 csv_file_path = 'listings.csv'
 
 # Writing to CSV
 with open(csv_file_path, 'w', newline='', encoding='utf-8') as file:
     writer = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    writer.writerow(['Start Time', 'End Time', 'Price', 'Location', 'Description', 'URL'])  # Updated header
+    writer.writerow(['Start Time', 'End Time', 'Price', 'Location', 'Description', 'Image URL', 'URL'])  # Updated header
 
     for listing in listings:
         writer.writerow([
@@ -69,7 +67,8 @@ with open(csv_file_path, 'w', newline='', encoding='utf-8') as file:
             listing[2], 
             listing[3].replace('|', '-'), 
             listing[4], 
-            listing[5]
+            listing[5],
+            listing[6]
         ])
 
 print(f"Data exported to {csv_file_path}")
