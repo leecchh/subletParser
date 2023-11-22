@@ -12,13 +12,15 @@
             text-align: left;
         }
         img {
-            max-width: 300px; /* Adjust as needed */
+            max-width: 100px;
             height: auto;
         }
     </style>
 </head>
 <body>
     <h2>Listings</h2>
+    <button onclick="sortTableByDate()">Sort by Start Date</button>
+    <button onclick="sortTableByPrice()">Sort by Price</button>
     <table id="listingsTable">
         <tr>
             <th>Start Time</th>
@@ -29,39 +31,74 @@
             <th>Picture</th>
             <th>URL</th>
         </tr>
+        <!-- Table rows will be added here -->
     </table>
 
     <script>
+        let listingsData = [];
+        let dateSortAscending = true;
+        let priceSortAscending = true;
+    
         fetch('http://127.0.0.1:5000/get-data')
             .then(response => response.json())
             .then(data => {
-                const table = document.getElementById('listingsTable');
-                data.forEach((row, index) => {
-                    if (index === 0) return; // Skip header row
-                    const tr = document.createElement('tr');
-                    row.forEach((cell, cellIndex) => {
-                        const td = document.createElement('td');
-                        if (cellIndex === 5) { // Assuming Picture URL is the 6th column
-                            const img = document.createElement('img');
-                            img.src = cell;
-                            td.appendChild(img);
-                        } else if (cellIndex === 6) { // Assuming URL is the 7th column
-                            const a = document.createElement('a');
-                            a.href = cell;
-                            a.textContent = cell;
-                            a.target = '_blank'; // Open in new tab
-                            td.appendChild(a);
-                        } else {
-                            td.textContent = cell;
-                        }
-                        tr.appendChild(td);
-                    });
-                    table.appendChild(tr);
-                });
+                listingsData = data.slice(1); // Skip the header row in the data
+                renderTable(listingsData);
             })
-            .catch(error => {
-                console.error('Error fetching data:', error);
+            .catch(error => console.error('Error fetching data:', error));
+    
+        function renderTable(data) {
+            const table = document.getElementById('listingsTable');
+            // Clear existing table rows except the header
+            table.innerHTML = table.rows[0].outerHTML;
+            // Add new rows
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                row.forEach((cell, cellIndex) => {
+                    const td = document.createElement('td');
+                    if (cellIndex === 5) {
+                        const img = document.createElement('img');
+                        img.src = cell;
+                        td.appendChild(img);
+                    } else if (cellIndex === 6) {
+                        const a = document.createElement('a');
+                        a.href = cell;
+                        a.textContent = cell;
+                        a.target = '_blank';
+                        td.appendChild(a);
+                    } else {
+                        td.textContent = cell;
+                    }
+                    tr.appendChild(td);
+                });
+                table.appendChild(tr);
             });
+        }
+    
+        function sortTableByDate() {
+            listingsData.sort((a, b) => {
+                const dateA = new Date(a[0]);
+                const dateB = new Date(b[0]);
+                return dateSortAscending ? dateA - dateB : dateB - dateA;
+            });
+            dateSortAscending = !dateSortAscending;
+            renderTable(listingsData);
+        }
+    
+        function sortTableByPrice() {
+            listingsData.sort((a, b) => {
+                const priceA = parsePrice(a[2]);
+                const priceB = parsePrice(b[2]);
+                return priceSortAscending ? priceA - priceB : priceB - priceA;
+            });
+            priceSortAscending = !priceSortAscending;
+            renderTable(listingsData);
+        }
+    
+        function parsePrice(priceStr) {
+            return Number(priceStr.replace(/[^0-9.-]+/g,""));
+        }
     </script>
+    
 </body>
 </html>
