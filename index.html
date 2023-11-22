@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Listings</title>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 5px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h2>Listings</h2>
+    <table id="listingsTable">
+        <tr>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Price</th>
+            <th>Location</th>
+            <th>Description</th>
+            <th>URL</th>
+        </tr>
+    </table>
+
+    <script>
+        fetch('http://127.0.0.1:5000/get-data')
+            .then(response => response.json())
+            .then(data => {
+                const table = document.getElementById('listingsTable');
+                data.forEach((row, index) => {
+                    if (index === 0) return; // Skip header row
+                    const tr = document.createElement('tr');
+                    row.forEach((cell, cellIndex) => {
+                        const td = document.createElement('td');
+                        if (cellIndex === 5) { // Assuming URL is the 6th column
+                            const a = document.createElement('a');
+                            a.href = cell;
+                            a.textContent = cell;
+                            a.target = '_blank'; // Open in new tab
+                            td.appendChild(a);
+                        } else {
+                            td.textContent = cell;
+                        }
+                        tr.appendChild(td);
+                    });
+                    table.appendChild(tr);
+                });
+            });
+    </script>
+</body>
+</html>
